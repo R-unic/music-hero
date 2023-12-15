@@ -24,11 +24,12 @@ export class BeatController implements OnRender {
     }
   }
 
-  public start(): void {
+  public start(cleanup: Callback): void {
     if (!this.currentSong)
       return Log.warning("Cannot start BeatController: No current song set");
 
     Log.info(`Started song "${this.currentSong.Instance.Name}" via BeatController`);
+    this.currentSong!.Instance.Audio.Ended.Once(cleanup);
     task.spawn(() => this.currentSong!.Instance.Audio.Play());
     this.active = true;
   }

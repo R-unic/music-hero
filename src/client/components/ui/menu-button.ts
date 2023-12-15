@@ -1,4 +1,4 @@
-import { OnStart } from "@flamework/core";
+import type { OnStart } from "@flamework/core";
 import { Component, BaseComponent } from "@flamework/components";
 import { TweenInfoBuilder } from "@rbxts/builders";
 
@@ -24,7 +24,7 @@ export class MenuButton extends BaseComponent<{}, GuiButton> implements OnStart 
   public onStart(): void {
     const borderStroke = <UIStroke>this.instance.WaitForChild("Border");
     const animationInfo = new TweenInfoBuilder()
-      .SetTime(0.15)
+      .SetTime(0.05)
       .SetEasingStyle(Enum.EasingStyle.Quad)
       .SetEasingDirection(Enum.EasingDirection.In);
 
@@ -40,6 +40,7 @@ export class MenuButton extends BaseComponent<{}, GuiButton> implements OnStart 
           this.song.set("Paradise Falls");
           this.song.setDifficulty(SongDifficulty.Easy);
           this.song.assignPart("Drums");
+          this.song.start();
           break;
         }
       }

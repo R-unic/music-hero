@@ -26,15 +26,12 @@ export class SongController implements OnStart, OnRender {
   ) {}
 
   public async onStart(): Promise<void> {
-    task.wait(5)
     const boardModel = <Part>CollectionService.GetTagged("RhythmBoard").find(instance => !instance.IsDescendantOf(StarterGui));
     this.rhythmBoard = await this.components.waitForComponent<RhythmBoard>(boardModel);
 
     const beatVisualizerFrame = <Frame>CollectionService.GetTagged("BeatVisualizer").find(instance => !instance.IsDescendantOf(StarterGui));
     const beatVisualizer = await this.components.waitForComponent<BeatVisualizer>(beatVisualizerFrame);
     this.beatController.onBeat.Connect(() => beatVisualizer.visualizeBeat());
-    this.beatController.start();
-    this.beatController.currentSong?.Instance.Audio.Ended.Once(() => this.cleanup());
   }
 
   public onRender(dt: number): void {
@@ -42,6 +39,10 @@ export class SongController implements OnStart, OnRender {
 
     this.rhythmBoard.update(this.elapsed);
     this.elapsed += dt;
+  }
+
+  public start(): void {
+    this.beatController.start(() => this.cleanup());
   }
 
   public set(songName: ExtractKeys<typeof Assets.Songs, SongData>): void {
