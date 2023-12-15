@@ -8,7 +8,6 @@ import { SongDifficulty, type SongInfo } from "shared/structs/song-info";
 import Log from "shared/logger";
 
 import type { RhythmBoard } from "client/components/rhythm-board";
-import type { BeatVisualizer } from "client/components/ui/beat-visualizer";
 import type { BeatController } from "./beat-controller";
 
 @Controller()
