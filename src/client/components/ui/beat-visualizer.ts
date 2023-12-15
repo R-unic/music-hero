@@ -1,5 +1,7 @@
+import type { OnStart } from "@flamework/core";
 import { Component, BaseComponent } from "@flamework/components";
 import { TweenInfoBuilder } from "@rbxts/builders";
+import { BeatController } from "client/controllers/beat-controller";
 
 import { Player } from "shared/utilities/helpers";
 import { tween } from "shared/utilities/ui";
@@ -8,7 +10,15 @@ import { tween } from "shared/utilities/ui";
   tag: "BeatVisualizer",
   ancestorWhitelist: [ Player.WaitForChild("PlayerGui") ]
 })
-export class BeatVisualizer extends BaseComponent<{}, Frame & { UIStroke: UIStroke }> {
+export class BeatVisualizer extends BaseComponent<{}, Frame & { UIStroke: UIStroke }> implements OnStart {
+  public constructor(
+    private readonly beatController: BeatController
+  ) { super(); }
+
+  public onStart(): void {
+    this.beatController.onBeat.Connect(() => this.visualizeBeat());
+  }
+
   public visualizeBeat(): void {
     tween(
       this.instance.UIStroke,

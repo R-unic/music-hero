@@ -28,10 +28,6 @@ export class SongController implements OnStart, OnRender {
   public async onStart(): Promise<void> {
     const boardModel = <Part>CollectionService.GetTagged("RhythmBoard").find(instance => !instance.IsDescendantOf(StarterGui));
     this.rhythmBoard = await this.components.waitForComponent<RhythmBoard>(boardModel);
-
-    const beatVisualizerFrame = <Frame>CollectionService.GetTagged("BeatVisualizer").find(instance => !instance.IsDescendantOf(StarterGui));
-    const beatVisualizer = await this.components.waitForComponent<BeatVisualizer>(beatVisualizerFrame);
-    this.beatController.onBeat.Connect(() => beatVisualizer.visualizeBeat());
   }
 
   public onRender(dt: number): void {
