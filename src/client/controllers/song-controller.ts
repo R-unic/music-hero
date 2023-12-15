@@ -1,6 +1,6 @@
 import { Controller, OnStart, type OnRender } from "@flamework/core";
 import type { Components } from "@flamework/components";
-import { CollectionService, StarterGui } from "@rbxts/services";
+import { CollectionService, StarterGui, SoundService as Sound } from "@rbxts/services";
 import { Janitor } from "@rbxts/janitor";
 
 import { Assets } from "shared/utilities/helpers";
@@ -38,6 +38,7 @@ export class SongController implements OnStart, OnRender {
   }
 
   public start(): void {
+    this.playIntroMetronome();
     this.beatController.start(() => this.cleanup());
   }
 
@@ -63,6 +64,22 @@ export class SongController implements OnStart, OnRender {
 
   public getCurrentNoteTrack(): Maybe<Model> {
     return this.rhythmBoard?.noteTrack;
+  }
+
+  private playIntroMetronome(): void {
+    const beatDuration = this.beatController.getBeatDuration();
+    Sound.Tick.Play();
+    task.wait(beatDuration * 2);
+    Sound.Tick.Play();
+    task.wait(beatDuration * 2);
+    Sound.Tick.Play();
+    task.wait(beatDuration);
+    Sound.Tick.Play();
+    task.wait(beatDuration);
+    Sound.Tick.Play();
+    task.wait(beatDuration);
+    Sound.Tick.Play();
+    task.wait(beatDuration);
   }
 
   private getSongInfo(songName: ExtractKeys<typeof Assets.Songs, SongData>): SongInfo {
