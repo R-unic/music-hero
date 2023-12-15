@@ -1,21 +1,26 @@
 import { Component, BaseComponent } from "@flamework/components";
 
+import { Player } from "shared/utilities/helpers";
 import { VALID_NOTE_RADIUS } from "shared/constants";
 import Log from "shared/logger";
 
 const BEAT_STUD_LENGTH = 12;
 const NOTE_COMPLETION_POSITION = 0 + VALID_NOTE_RADIUS;
 
-@Component({ tag: "RhythmBoard" })
+@Component({
+  tag: "RhythmBoard",
+  ancestorWhitelist: [ Player.WaitForChild("PlayerGui") ]
+})
 export class RhythmBoard extends BaseComponent<{}, Part & { Grid: Texture }> {
   public beatDuration = 0;
   public noteTrack?: Model;
   private defaultNoteTrackPivot?: CFrame;
+  private readonly viewport = <ViewportFrame>this.instance.Parent;
 
   public setNoteTrack(noteTrack: Model): void {
-    this.instance.Parent?.FindFirstChild("Notes")?.Destroy();
+    this.viewport.FindFirstChild("Notes")?.Destroy();
     noteTrack.Name = "Notes";
-    noteTrack.Parent = this.instance.Parent;
+    noteTrack.Parent = this.viewport;
     this.defaultNoteTrackPivot = noteTrack.GetPivot();
     this.noteTrack = noteTrack;
   }

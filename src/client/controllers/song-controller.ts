@@ -30,11 +30,6 @@ export class SongController implements OnStart, OnRender {
     const boardModel = <Part>CollectionService.GetTagged("RhythmBoard").find(instance => !instance.IsDescendantOf(StarterGui));
     this.rhythmBoard = await this.components.waitForComponent<RhythmBoard>(boardModel);
 
-    // temp
-    this.set("Paradise Falls");
-    this.setDifficulty(SongDifficulty.Easy);
-    this.assignPart("Drums");
-
     const beatVisualizerFrame = <Frame>CollectionService.GetTagged("BeatVisualizer").find(instance => !instance.IsDescendantOf(StarterGui));
     const beatVisualizer = await this.components.waitForComponent<BeatVisualizer>(beatVisualizerFrame);
     this.beatController.onBeat.Connect(() => beatVisualizer.visualizeBeat());

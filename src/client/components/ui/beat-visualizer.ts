@@ -1,9 +1,13 @@
 import { Component, BaseComponent } from "@flamework/components";
 import { TweenInfoBuilder } from "@rbxts/builders";
 
+import { Player } from "shared/utilities/helpers";
 import { tween } from "shared/utilities/ui";
 
-@Component({ tag: "BeatVisualizer" })
+@Component({
+  tag: "BeatVisualizer",
+  ancestorWhitelist: [ Player.WaitForChild("PlayerGui") ]
+})
 export class BeatVisualizer extends BaseComponent<{}, Frame & { UIStroke: UIStroke }> {
   public visualizeBeat(): void {
     tween(
