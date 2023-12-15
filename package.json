@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@rbxts/compiler-types": "^2.0.2-types.0",
-    "@rbxts/types": "^1.0.642",
+    "@rbxts/compiler-types": "^2.2.0-types.0",
+    "@rbxts/types": "^1.0.737",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
     "eslint": "^7.31.0",
@@ -32,6 +32,7 @@
     "@rbxts/datastore2": "^1.4.0-ts.0",
     "@rbxts/gamejoy": "^1.1.4",
     "@rbxts/janitor": "^1.15.4-ts.0",
+    "@rbxts/services": "^1.5.1",
     "@rbxts/strict-map": "^1.0.2",
     "@rbxts/string-utils": "^1.0.3",
     "rbxts-transformer-switchcase": "^1.0.1"

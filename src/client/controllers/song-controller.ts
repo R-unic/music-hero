@@ -41,7 +41,7 @@ export class SongController implements OnStart, OnRender {
     this.beatController.start(() => this.cleanup());
   }
 
-  public set(songName: ExtractKeys<typeof Assets.Songs, SongData>): void {
+  public set(songName: SongName): void {
     this.beatController.currentSong = this.getSongInfo(songName);
     this.rhythmBoard!.beatDuration = this.beatController.getBeatDuration();
   }
@@ -56,7 +56,6 @@ export class SongController implements OnStart, OnRender {
     const songParts = this.beatController.currentSong!.Instance.Parts;
     const noteTrack = this.songJanitor.Add(songParts[difficultyName][partName].Clone());
 
-    Log.info(`Assigned part "${partName}" on "${difficultyName}"`);
     this.rhythmBoard!.setNoteTrack(noteTrack);
     this.part = partName;
   }
@@ -81,7 +80,7 @@ export class SongController implements OnStart, OnRender {
     task.wait(beatDuration);
   }
 
-  private getSongInfo(songName: ExtractKeys<typeof Assets.Songs, SongData>): SongInfo {
+  private getSongInfo(songName: SongName): SongInfo {
     const song = Assets.Songs[songName];
     const tempo = <number>song.GetAttribute("Tempo");
 

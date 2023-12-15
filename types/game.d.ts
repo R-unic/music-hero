@@ -1,3 +1,6 @@
+
+type SongName = ExtractKeys<ReplicatedFirst["Assets"]["Songs"], SongData>;
+
 interface SongParts {
   Drums: Model;
   Lead: Model;
