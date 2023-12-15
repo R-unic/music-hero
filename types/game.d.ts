@@ -7,6 +7,7 @@ interface SongParts {
 
 interface SongData extends Folder {
   Audio: Sound;
+  Cover: ImageLabel;
   Parts: Folder & {
     Hard: Folder & SongParts;
     Expert: Folder & SongParts;

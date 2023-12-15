@@ -14,7 +14,11 @@ export class MenuController {
   }
 
   public setPage(pageName: string): void {
-    for (const page of <GuiObject[]>this.menuUI.GetChildren())
+    const pages = this.menuUI.WaitForChild("Pages")
+      .GetChildren()
+      .filter((page): page is Frame => page.IsA("Frame"));
+
+    for (const page of pages)
       page.Visible = page.Name === pageName;
   }
 }

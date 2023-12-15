@@ -33,14 +33,15 @@ export class MenuButton extends BaseComponent<{}, GuiButton> implements OnStart 
     this.instance.MouseButton1Click.Connect(() => {
       switch(this.instance.Name) {
         case "Play": {
-          this.menu.disable();
-          this.rhythmHUD.enable();
+          this.menu.setPage("SongSelect");
+          // this.menu.disable();
+          // this.rhythmHUD.enable();
 
-          // temp
-          this.song.set("Paradise Falls");
-          this.song.setDifficulty(SongDifficulty.Easy);
-          this.song.assignPart("Drums");
-          this.song.start();
+          // // temp
+          // this.song.set("Paradise Falls");
+          // this.song.setDifficulty(SongDifficulty.Easy);
+          // this.song.assignPart("Drums");
+          // this.song.start();
           break;
         }
       }
