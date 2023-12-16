@@ -44,7 +44,7 @@ export class DataService implements OnInit, OnPlayerJoin {
     this.initialize(player, "stars", 0);
 		this.initialize(player, "diamonds", 0);
 		this.initialize(player, "keybinds", ["D", "F", "J", "K", "L"]);
-		this.initialize(player, "songScores", []);
+		this.initialize(player, "songScores", <any>{});
 
 		Log.info("Initialized data");
 		dataLoaded(player);

@@ -9,19 +9,22 @@ import Log from "shared/logger";
 
 import type { RhythmBoard } from "client/components/rhythm-board";
 import type { BeatController } from "./beat-controller";
+import type { ScoreController } from "./score-controller";
 
 @Controller()
 export class SongController implements OnStart, OnRender {
   private readonly songJanitor = new Janitor;
-
   private elapsed = 0;
-  public difficulty = SongDifficulty.Expert;
+  private overdriveProgress = 0;
   private part: keyof SongParts = "Lead";
   private rhythmBoard?: RhythmBoard;
 
+  public difficulty = SongDifficulty.Expert;
+
   public constructor(
     private readonly components: Components,
-    private readonly beatController: BeatController
+    private readonly beatController: BeatController,
+    private readonly score: ScoreController
   ) {}
 
   public async onStart(): Promise<void> {
@@ -42,6 +45,7 @@ export class SongController implements OnStart, OnRender {
   }
 
   public set(songName: SongName): void {
+    this.score.setSong(songName);
     this.beatController.currentSong = this.getSongInfo(songName);
     this.rhythmBoard!.beatDuration = this.beatController.getBeatDuration();
   }
@@ -56,6 +60,7 @@ export class SongController implements OnStart, OnRender {
     const songParts = this.beatController.currentSong!.Instance.Parts;
     const noteTrack = this.songJanitor.Add(songParts[difficultyName][partName].Clone());
 
+    this.score.setTotalNotes(noteTrack.GetChildren().size());
     this.rhythmBoard!.setNoteTrack(noteTrack);
     this.part = partName;
   }

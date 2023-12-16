@@ -6,7 +6,7 @@ export interface GameDataModel {
   stars: number;
   diamonds: number;
   keybinds: string[];
-  songScores: Record<SongName, SongScoreTable>[];
+  songScores: Record<SongName, SongScoreTable[]>;
 }
 
 export type DataValue = GameDataModel[DataKey];

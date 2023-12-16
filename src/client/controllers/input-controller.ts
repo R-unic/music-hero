@@ -8,8 +8,9 @@ import { SongDifficulty } from "shared/structs/song-info";
 import type { DataKey } from "shared/data-models/generic";
 import Log from "shared/logger";
 
+import type { RhythmHUDController } from "./rhythm-hud-controller";
 import type { SongController } from "./song-controller";
-import { RhythmHUDController } from "./rhythm-hud-controller";
+import type { ScoreController } from "./score-controller";
 
 const { dataUpdate } = Events;
 
@@ -21,11 +22,12 @@ export class InputController implements OnInit {
 
   public constructor(
     private readonly rhythmHUD: RhythmHUDController,
-    private readonly song: SongController
+    private readonly song: SongController,
+    private readonly score: ScoreController
   ) {}
 
   public onInit(): void {
-    this.context.Bind("Space", () => {}) // overdrive
+    this.context.Bind("Space", () => this.score.activateOverdrive());
     dataUpdate.connect(async (key: DataKey, keybinds: string[]) => {
       if (key !== "keybinds") return;
       this.context.UnbindAllActions();
@@ -44,10 +46,10 @@ export class InputController implements OnInit {
 
     const [pressedNote] = this.getNotesInRadius(notePosition);
     if (!pressedNote) return;
-
-    const perfectNote = math.abs(pressedNote.Position.Z) <= PERFECT_NOTE_RADIUS;
     pressedNote.Destroy();
-    Log.info("Completed note!" + (perfectNote ? " (perfect)" : ""));
+
+    const isPerfect = math.abs(pressedNote.Position.Z) <= PERFECT_NOTE_RADIUS;
+    this.score.addCompletedNote(isPerfect, 1 / pressedNote.Position.Z);
   }
 
   private getNotesInRadius(notePosition: NotePosition) {
