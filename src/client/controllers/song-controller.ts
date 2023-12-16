@@ -15,7 +15,7 @@ export class SongController implements OnStart, OnRender {
   private readonly songJanitor = new Janitor;
 
   private elapsed = 0;
-  private difficulty = SongDifficulty.Expert;
+  public difficulty = SongDifficulty.Expert;
   private part: keyof SongParts = "Lead";
   private rhythmBoard?: RhythmBoard;
 

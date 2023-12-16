@@ -3,12 +3,12 @@ import { DataKey, DataValue, GameDataModel } from "./data-models/generic";
 
 interface ServerEvents {
   initializeData(): void;
-  dataLoaded(): void;
   setData(key: DataKey, value: DataValue): void;
   incrementData(key: ExtractKeys<GameDataModel, number>, amount?: number): void;
 }
 
 interface ClientEvents {
+  dataLoaded(): void;
   dataUpdate(key: DataKey, value: DataValue): void;
 }
 

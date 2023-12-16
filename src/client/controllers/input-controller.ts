@@ -1,14 +1,21 @@
-import { Controller, OnInit } from "@flamework/core";
+import { Controller, type OnInit } from "@flamework/core";
 import { Context as InputContext } from "@rbxts/gamejoy";
+import type { ActionLike, RawAction } from "@rbxts/gamejoy/out/Definitions/Types";
 
+import { Events } from "client/network";
 import { PERFECT_NOTE_RADIUS, VALID_NOTE_RADIUS } from "shared/constants";
+import { SongDifficulty } from "shared/structs/song-info";
+import type { DataKey } from "shared/data-models/generic";
+import type Keybinds from "shared/data-models/keybinds";
 import Log from "shared/logger";
 
 import type { SongController } from "./song-controller";
 
-const NOTE_WS_POSITIONS = [-6, -2, 2, 6]; // TODO: new positions array for expert?
+const { dataUpdate } = Events;
 
-type NotePosition = 1 | 2 | 3 | 4;
+const NOTE_WS_POSITIONS = [-6, -2, 2, 6, 10];
+
+type NotePosition = 1 | 2 | 3 | 4 | 5;
 
 @Controller()
 export class InputController implements OnInit {
@@ -19,15 +26,21 @@ export class InputController implements OnInit {
   ) {}
 
   public onInit(): void {
-    this.context
-      .Bind("D", () => this.attemptNote(1))
-      .Bind("F", () => this.attemptNote(2))
-      .Bind("J", () => this.attemptNote(3))
-      .Bind("K", () => this.attemptNote(4));
+    dataUpdate.connect(async (key: DataKey, keybinds: string[]) => {
+      if (key !== "keybinds") return;
+      this.context.UnbindAllActions();
+
+      for (const keybind of keybinds) {
+        const position = <NotePosition>(keybinds.indexOf(keybind)! + 1);
+        this.context.Bind(<ActionLike<RawAction>><unknown>keybind, () => this.attemptNote(position));
+      }
+    });
   }
 
   private attemptNote(notePosition: NotePosition) {
+    if (notePosition === 5 && this.song.difficulty !== SongDifficulty.Expert) return;
     if (!this.song.getCurrentNoteTrack()) return;
+
     const [pressedNote] = this.getNotesInRadius(notePosition);
     if (!pressedNote) return;
 
