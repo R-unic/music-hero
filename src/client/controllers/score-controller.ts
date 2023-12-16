@@ -1,4 +1,5 @@
 import { Controller } from "@flamework/core";
+import Signal from "@rbxts/signal";
 
 import { Events, Functions } from "client/network";
 import type SongScoreTable from "shared/data-models/song-score-table";
@@ -9,6 +10,8 @@ const { floor, clamp } = math;
 
 @Controller()
 export class ScoreController {
+  public readonly overdriveProgressChanged = new Signal<(newProgress: number) => void>;
+
   private currentSong?: SongName;
   private inOverdrive = false;
   private overdriveProgress = 0;
@@ -57,7 +60,13 @@ export class ScoreController {
 
   public addOverdriveProgress(progress: number): void {
     if (!this.currentSong) return;
-    this.overdriveProgress += progress;
+    this.setOverdriveProgress(this.overdriveProgress + progress);
+  }
+
+  public setOverdriveProgress(progress: number): void {
+    if (!this.currentSong) return;
+    this.overdriveProgress = clamp(progress, 0, 100);
+    this.overdriveProgressChanged.Fire(this.overdriveProgress);
   }
 
   public activateOverdrive(): void {
@@ -69,7 +78,7 @@ export class ScoreController {
     task.spawn(() => {
       while (this.overdriveProgress > 0) {
         task.wait();
-        this.overdriveProgress = clamp(this.overdriveProgress - 1, 0, 100);
+        this.addOverdriveProgress(-1);
       }
       this.inOverdrive = false;
     });
