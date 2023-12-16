@@ -1,4 +1,4 @@
-
+type NotePosition = 1 | 2 | 3 | 4 | 5;
 type SongName = ExtractKeys<ReplicatedFirst["Assets"]["Songs"], SongData>;
 
 interface SongParts {

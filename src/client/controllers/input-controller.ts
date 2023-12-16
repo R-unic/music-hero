@@ -6,26 +6,26 @@ import { Events } from "client/network";
 import { PERFECT_NOTE_RADIUS, VALID_NOTE_RADIUS } from "shared/constants";
 import { SongDifficulty } from "shared/structs/song-info";
 import type { DataKey } from "shared/data-models/generic";
-import type Keybinds from "shared/data-models/keybinds";
 import Log from "shared/logger";
 
 import type { SongController } from "./song-controller";
+import { RhythmHUDController } from "./rhythm-hud-controller";
 
 const { dataUpdate } = Events;
 
 const NOTE_WS_POSITIONS = [-6, -2, 2, 6, 10];
-
-type NotePosition = 1 | 2 | 3 | 4 | 5;
 
 @Controller()
 export class InputController implements OnInit {
   private readonly context = new InputContext;
 
   public constructor(
+    private readonly rhythmHUD: RhythmHUDController,
     private readonly song: SongController
   ) {}
 
   public onInit(): void {
+    this.context.Bind("Space", () => {}) // overdrive
     dataUpdate.connect(async (key: DataKey, keybinds: string[]) => {
       if (key !== "keybinds") return;
       this.context.UnbindAllActions();
@@ -40,6 +40,7 @@ export class InputController implements OnInit {
   private attemptNote(notePosition: NotePosition) {
     if (notePosition === 5 && this.song.difficulty !== SongDifficulty.Expert) return;
     if (!this.song.getCurrentNoteTrack()) return;
+    this.rhythmHUD.highlightFinishPosition(notePosition);
 
     const [pressedNote] = this.getNotesInRadius(notePosition);
     if (!pressedNote) return;
