@@ -1,7 +1,7 @@
 import { Component, BaseComponent } from "@flamework/components";
 
 import { Player } from "shared/utilities/helpers";
-import { VALID_NOTE_RADIUS } from "shared/constants";
+import { NORMAL_NOTE_COLOR, OVERDRIVE_NOTE_COLOR, VALID_NOTE_RADIUS } from "shared/constants";
 import Log from "shared/logger";
 
 import type { ScoreController } from "client/controllers/score-controller";
@@ -36,10 +36,22 @@ export class RhythmBoard extends BaseComponent<{}, Part & { Grid: Texture }> {
     this.instance.Grid.OffsetStudsV = lerpPosition;
     this.noteTrack!.PivotTo(this.defaultNoteTrackPivot!.add(new Vector3(0, 0, lerpPosition)));
 
-    for (const note of <MeshPart[]>this.noteTrack!.GetChildren())
+    const allNotes = this.noteTrack!.GetDescendants()
+      .filter((instance): instance is MeshPart => instance.IsA("MeshPart"));
+
+    for (const note of allNotes)
       task.spawn(() => {
         if (note.Position.Z >= NOTE_COMPLETION_POSITION) {
           Log.info("Failed note!");
+          if (note.Color === OVERDRIVE_NOTE_COLOR) {
+            const overdriveGroup = note.Parent!;
+            for (const otherNote of <Part[]>overdriveGroup.GetChildren()) {
+              otherNote.Color = NORMAL_NOTE_COLOR;
+              otherNote.Parent = overdriveGroup.Parent;
+            }
+            overdriveGroup.Destroy();
+          }
+
           this.score.resetMultiplier();
           note.Destroy();
         }

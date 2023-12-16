@@ -3,6 +3,7 @@ import Signal from "@rbxts/signal";
 
 import { Events, Functions } from "client/network";
 import type SongScoreTable from "shared/data-models/song-score-table";
+import Log from "shared/logger";
 
 const { incrementData, setData } = Events;
 const { getData } = Functions;
@@ -29,12 +30,20 @@ export class ScoreController {
     this.totalNotes = totalNotes;
   }
 
-  public addCompletedNote(perfect: boolean, accuracy: number): void {
+  public add(amount: number): void {
     if (!this.currentSong) return;
+    this.current += amount * this.multiplier * (this.inOverdrive ? 2 : 1)
+  }
+
+  public addCompletedNote(lastOfOverdriveGroup: boolean, perfect: boolean, accuracy: number): void {
+    if (!this.currentSong) return;
+    if (lastOfOverdriveGroup)
+      this.addOverdriveProgress(20);
 
     const baseScore = 150 + (perfect ? 200 : 0);
     this.add(floor(baseScore * accuracy));
     this[perfect ? "perfectNotes" : "completedNotes"]++;
+    Log.info("Completed note" + (perfect ? " (perfect)" : "") + "!")
   }
 
   public async saveResult(): Promise<void> {
@@ -58,17 +67,6 @@ export class ScoreController {
     this.reset();
   }
 
-  public addOverdriveProgress(progress: number): void {
-    if (!this.currentSong) return;
-    this.setOverdriveProgress(this.overdriveProgress + progress);
-  }
-
-  public setOverdriveProgress(progress: number): void {
-    if (!this.currentSong) return;
-    this.overdriveProgress = clamp(progress, 0, 100);
-    this.overdriveProgressChanged.Fire(this.overdriveProgress);
-  }
-
   public activateOverdrive(): void {
     if (!this.currentSong) return;
     if (this.inOverdrive) return;
@@ -77,20 +75,26 @@ export class ScoreController {
     this.inOverdrive = true;
     task.spawn(() => {
       while (this.overdriveProgress > 0) {
-        task.wait();
+        task.wait(0.1);
         this.addOverdriveProgress(-1);
       }
       this.inOverdrive = false;
     });
   }
 
-  public add(amount: number): void {
-    if (!this.currentSong) return;
-    this.current += amount * this.multiplier * (this.inOverdrive ? 2 : 1)
-  }
-
   public resetMultiplier(): void {
     this.multiplier = 1;
+  }
+
+  private addOverdriveProgress(progress: number): void {
+    if (!this.currentSong) return;
+    this.setOverdriveProgress(this.overdriveProgress + progress);
+  }
+
+  private setOverdriveProgress(progress: number): void {
+    if (!this.currentSong) return;
+    this.overdriveProgress = clamp(progress, 0, 100);
+    this.overdriveProgressChanged.Fire(this.overdriveProgress);
   }
 
   private reset(): void {

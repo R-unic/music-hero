@@ -15,7 +15,7 @@ export class RhythmHUDController {
       .find(instance => instance.IsA("Frame") && instance.LayoutOrder === position);
 
     const tweenInfo = new TweenInfoBuilder()
-      .SetTime(0.05)
+      .SetTime(0.04)
       .SetEasingStyle(Enum.EasingStyle.Sine)
       .SetEasingDirection(Enum.EasingDirection.In)
       .SetReverses(true);
