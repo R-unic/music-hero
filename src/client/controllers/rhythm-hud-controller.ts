@@ -11,9 +11,7 @@ export class RhythmHUDController {
   private readonly finishPositions = <Frame>this.viewport.WaitForChild("FinishPositions");
 
   public highlightFinishPosition(position: NotePosition): void {
-    const finishPosition = <Frame>this.finishPositions.GetChildren()
-      .find(instance => instance.IsA("Frame") && instance.LayoutOrder === position);
-
+    const finishPosition = this.getFinishPosition(position);
     const tweenInfo = new TweenInfoBuilder()
       .SetTime(0.04)
       .SetEasingStyle(Enum.EasingStyle.Sine)
@@ -24,6 +22,16 @@ export class RhythmHUDController {
       BackgroundColor3: Color3.fromRGB(255, 230, 255),
       BackgroundTransparency: 0.3
     });
+  }
+
+  private getFinishPosition(position: NotePosition): Frame {
+    return <Frame>this.finishPositions.GetChildren()
+      .find(instance => instance.IsA("Frame") && instance.LayoutOrder === position);
+  }
+
+  public addNoteCompletionVFX(position: NotePosition): void {
+    const finishPosition = this.getFinishPosition(position);
+
   }
 
   public enable(): void {

@@ -28,7 +28,7 @@ export class MenuButton extends BaseComponent<{}, GuiButton & { Border: UIStroke
       .SetEasingStyle(Enum.EasingStyle.Quad)
       .SetEasingDirection(Enum.EasingDirection.In);
 
-    this.instance.MouseEnter.Connect(() => tween(this.instance.Border, animationInfo, { Thickness: 7 }));
+    this.instance.MouseEnter.Connect(() => tween(this.instance.Border, animationInfo, { Thickness: 6 }));
     this.instance.MouseLeave.Connect(() => tween(this.instance.Border, animationInfo, { Thickness: 0 }));
     this.instance.MouseButton1Click.Connect(() => {
       switch(this.instance.Name) {

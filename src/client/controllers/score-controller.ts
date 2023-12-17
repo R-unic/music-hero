@@ -1,4 +1,4 @@
-import { Controller } from "@flamework/core";
+import { Controller, OnStart } from "@flamework/core";
 import Signal from "@rbxts/signal";
 
 import { Events, Functions } from "client/network";
@@ -7,20 +7,31 @@ import Log from "shared/logger";
 
 const { incrementData, setData } = Events;
 const { getData } = Functions;
-const { floor, clamp } = math;
+const { round, floor, clamp } = math;
+
+const MAX_MULTIPLIER = 16;
 
 @Controller()
-export class ScoreController {
+export class ScoreController implements OnStart {
   public readonly overdriveProgressChanged = new Signal<(newProgress: number) => void>;
+  public readonly nextMultiplierProgressChanged = new Signal<(newProgress: number) => void>;
+  public readonly multiplierChanged = new Signal<(newMultiplier: number) => void>;
 
   private currentSong?: SongName;
   private inOverdrive = false;
   private overdriveProgress = 0;
   private current = 0;
   private multiplier = 1;
+  private nextMultiplierProgress = 0;
   private completedNotes = 0;
   private perfectNotes = 0;
   private totalNotes = 0;
+
+  public onStart(): void {
+    this.multiplierChanged.Fire(this.multiplier);
+    this.overdriveProgressChanged.Fire(this.overdriveProgress);
+    this.nextMultiplierProgressChanged.Fire(this.nextMultiplierProgress);
+  }
 
   public setSong(songName: SongName): void {
     this.currentSong = songName;
@@ -38,8 +49,9 @@ export class ScoreController {
   public addCompletedNote(lastOfOverdriveGroup: boolean, perfect: boolean, accuracy: number): void {
     if (!this.currentSong) return;
     if (lastOfOverdriveGroup)
-      this.addOverdriveProgress(20);
+      this.addOverdriveProgress(25);
 
+    this.addMultiplierProgress(round(30 / (this.multiplier / 2.5)))
     const baseScore = 150 + (perfect ? 200 : 0);
     this.add(floor(baseScore * accuracy));
     this[perfect ? "perfectNotes" : "completedNotes"]++;
@@ -84,6 +96,34 @@ export class ScoreController {
 
   public resetMultiplier(): void {
     this.multiplier = 1;
+    this.multiplierChanged.Fire(this.multiplier);
+    this.nextMultiplierProgress = 0;
+  }
+
+  private nextMultiplier(): void {
+    if (this.multiplier === MAX_MULTIPLIER) return;
+    this.multiplier = math.min(this.multiplier * 2, MAX_MULTIPLIER);
+    this.multiplierChanged.Fire(this.multiplier);
+    this.nextMultiplierProgress = 0;
+    this.nextMultiplierProgressChanged.Fire(this.nextMultiplierProgress);
+  }
+
+  private addMultiplierProgress(progress: number): void {
+    if (!this.currentSong) return;
+    if (this.multiplier === MAX_MULTIPLIER) return;
+    this.setMultiplierProgress(this.nextMultiplierProgress + progress);
+  }
+
+  private setMultiplierProgress(progress: number): void {
+    if (!this.currentSong) return;
+    if (progress >= 100) {
+      const residual = progress - 100;
+      this.nextMultiplier();
+      this.addMultiplierProgress(residual)
+    } else
+      this.nextMultiplierProgress = clamp(progress, 0, 100);
+
+    this.nextMultiplierProgressChanged.Fire(this.nextMultiplierProgress);
   }
 
   private addOverdriveProgress(progress: number): void {

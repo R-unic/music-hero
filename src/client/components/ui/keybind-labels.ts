@@ -8,10 +8,10 @@ import type { DataKey } from "shared/data-models/generic";
 const { dataUpdate } = Events;
 
 @Component({
-  tag: "RhythmBoardHUD",
+  tag: "KeybindLabels",
   ancestorWhitelist: [ Player.WaitForChild("PlayerGui") ]
 })
-export class RhythmBoardHUD extends BaseComponent<{}, Frame> implements OnStart {
+export class KeybindLabels extends BaseComponent<{}, Frame & { Unlisted: Folder & {  } }> implements OnStart {
   public onStart(): void {
     const keybindLabels = this.instance.GetChildren()
       .filter((instance): instance is TextLabel => instance.IsA("TextLabel"));
