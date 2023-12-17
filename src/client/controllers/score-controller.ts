@@ -16,6 +16,7 @@ export class ScoreController implements OnStart {
   public readonly overdriveProgressChanged = new Signal<(newProgress: number) => void>;
   public readonly nextMultiplierProgressChanged = new Signal<(newProgress: number) => void>;
   public readonly multiplierChanged = new Signal<(newMultiplier: number) => void>;
+  public readonly changed = new Signal<(newScore: number) => void>;
 
   private currentSong?: SongName;
   private inOverdrive = false;
@@ -43,7 +44,8 @@ export class ScoreController implements OnStart {
 
   public add(amount: number): void {
     if (!this.currentSong) return;
-    this.current += amount * this.multiplier * (this.inOverdrive ? 2 : 1)
+    this.current += amount * this.multiplier * (this.inOverdrive ? 2 : 1);
+    this.changed.Fire(this.current);
   }
 
   public addCompletedNote(lastOfOverdriveGroup: boolean, perfect: boolean, accuracy: number): void {
@@ -52,7 +54,7 @@ export class ScoreController implements OnStart {
       this.addOverdriveProgress(25);
 
     this.addMultiplierProgress(round(30 / (this.multiplier / 2.5)))
-    const baseScore = 150 + (perfect ? 200 : 0);
+    const baseScore = 10 + (perfect ? 5 : 0);
     this.add(floor(baseScore * accuracy));
     this[perfect ? "perfectNotes" : "completedNotes"]++;
     Log.info("Completed note" + (perfect ? " (perfect)" : "") + "!")
@@ -140,7 +142,8 @@ export class ScoreController implements OnStart {
   private reset(): void {
     this.resetMultiplier();
     this.current = 0;
-    this.overdriveProgress = 0;
+    this.changed.Fire(this.current);
+    this.setOverdriveProgress(0);
     this.completedNotes = 0;
     this.perfectNotes = 0;
     this.totalNotes = 0;

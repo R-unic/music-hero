@@ -1,11 +1,11 @@
 import type { OnStart } from "@flamework/core";
 import { Component, BaseComponent } from "@flamework/components";
+import { TweenInfoBuilder } from "@rbxts/builders";
 
 import { Player } from "shared/utilities/helpers";
+import { tween } from "shared/utilities/ui";
 
 import type { ScoreController } from "client/controllers/score-controller";
-import { tween } from "shared/utilities/ui";
-import { TweenInfoBuilder } from "@rbxts/builders";
 
 @Component({
   tag: "MultiplierFrame",

@@ -2,6 +2,7 @@ import { Controller, OnStart, type OnRender } from "@flamework/core";
 import type { Components } from "@flamework/components";
 import { CollectionService, StarterGui, SoundService as Sound } from "@rbxts/services";
 import { Janitor } from "@rbxts/janitor";
+import Signal from "@rbxts/signal";
 
 import { Assets } from "shared/utilities/helpers";
 import { SongDifficulty, type SongInfo } from "shared/structs/song-info";
@@ -13,13 +14,13 @@ import type { ScoreController } from "./score-controller";
 
 @Controller()
 export class SongController implements OnStart, OnRender {
-  private readonly songJanitor = new Janitor;
-  private elapsed = 0;
-  private overdriveProgress = 0;
-  private part: keyof SongParts = "Lead";
-  private rhythmBoard?: RhythmBoard;
-
+  public readonly partChanged = new Signal<(newPart: keyof SongParts) => void>;
   public difficulty = SongDifficulty.Expert;
+
+  private readonly songJanitor = new Janitor;
+  private rhythmBoard?: RhythmBoard;
+  private part: keyof SongParts = "Lead";
+  private elapsed = 0;
 
   public constructor(
     private readonly components: Components,
@@ -63,6 +64,7 @@ export class SongController implements OnStart, OnRender {
     this.score.setTotalNotes(noteTrack.GetChildren().size());
     this.rhythmBoard!.setNoteTrack(noteTrack);
     this.part = partName;
+    this.partChanged.Fire(this.part);
   }
 
   public getCurrentNoteTrack(): Maybe<Model> {

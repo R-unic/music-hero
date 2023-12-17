@@ -12,6 +12,7 @@ import type { SongController } from "./song-controller";
 import type { ScoreController } from "./score-controller";
 
 const { dataUpdate } = Events;
+const { abs } = math;
 
 const NOTE_WS_POSITIONS = [-6, -2, 2, 6, 10];
 
@@ -51,9 +52,9 @@ export class InputController implements OnInit {
     const [pressedNote] = this.getNotesInRadius(notePosition);
     if (!pressedNote) return;
 
-    const isPerfect = math.abs(pressedNote.Position.Z) <= PERFECT_NOTE_RADIUS;
+    const isPerfect = abs(pressedNote.Position.Z) <= PERFECT_NOTE_RADIUS;
     const lastOfOverdriveGroup = pressedNote.Parent!.Name === "OverdriveGroup" && pressedNote.Parent!.GetChildren().size() === 1;
-    this.score.addCompletedNote(lastOfOverdriveGroup, isPerfect, 1 / pressedNote.Position.Z);
+    this.score.addCompletedNote(lastOfOverdriveGroup, isPerfect, abs(1 / pressedNote.Position.Z));
     this.rhythmHUD.addNoteCompletionVFX(notePosition);
     pressedNote.Destroy();
   }
