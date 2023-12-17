@@ -11,7 +11,7 @@ import type { SongSelectController } from "client/controllers/song-select-contro
   tag: "PartButton",
   ancestorWhitelist: [ Player.WaitForChild("PlayerGui") ]
 })
-export class PartButton extends BaseComponent<{}, GuiButton> implements OnStart {
+export class PartButton extends BaseComponent<{}, ImageButton> implements OnStart {
   private isSelected = false;
 
   public constructor(
@@ -42,7 +42,10 @@ export class PartButton extends BaseComponent<{}, GuiButton> implements OnStart 
       for (const partButton of this.components.getAllComponents<PartButton>()) {
         const isSelected = partButton.instance.Name === this.instance.Name;
         partButton.isSelected = isSelected;
-        tween(partButton.instance, animationInfo, { BackgroundTransparency: isSelected ? selectTrans : 1 });
+        tween(partButton.instance, animationInfo, {
+          BackgroundTransparency: isSelected ? selectTrans : 1,
+          ImageColor3: isSelected ? new Color3(0.1, 0.1, 0.1) : new Color3(1, 1, 1)
+        });
       }
     });
   }
