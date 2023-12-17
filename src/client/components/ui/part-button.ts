@@ -11,7 +11,7 @@ import type { SongSelectController } from "client/controllers/song-select-contro
   tag: "PartButton",
   ancestorWhitelist: [ Player.WaitForChild("PlayerGui") ]
 })
-export class PartButton extends BaseComponent<{}, ImageButton> implements OnStart {
+export class PartButton extends BaseComponent<{}, ImageButton & { Icon: ImageLabel; GreyOut: ImageButton; }> implements OnStart {
   private isSelected = false;
 
   public constructor(
@@ -21,9 +21,9 @@ export class PartButton extends BaseComponent<{}, ImageButton> implements OnStar
 
   public onStart(): void {
     const hoverTrans = 0.7;
-    const selectTrans = 0.5;
+    const selectTrans = 0.15;
     const animationInfo = new TweenInfoBuilder()
-      .SetTime(0.075)
+      .SetTime(0.085)
       .SetEasingStyle(Enum.EasingStyle.Quad)
       .SetEasingDirection(Enum.EasingDirection.In);
 
@@ -43,8 +43,10 @@ export class PartButton extends BaseComponent<{}, ImageButton> implements OnStar
         const isSelected = partButton.instance.Name === this.instance.Name;
         partButton.isSelected = isSelected;
         tween(partButton.instance, animationInfo, {
-          BackgroundTransparency: isSelected ? selectTrans : 1,
-          ImageColor3: isSelected ? new Color3(0.1, 0.1, 0.1) : new Color3(1, 1, 1)
+          BackgroundTransparency: isSelected ? selectTrans : 1
+        });
+        tween(partButton.instance.Icon, animationInfo, {
+          ImageColor3: isSelected ? new Color3(0.175, 0.175, 0.175) : new Color3(1, 1, 1)
         });
       }
     });
