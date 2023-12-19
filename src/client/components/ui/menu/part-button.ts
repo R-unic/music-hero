@@ -46,7 +46,7 @@ export class PartButton extends BaseComponent<{}, ImageButton & { Icon: ImageLab
           BackgroundTransparency: isSelected ? selectTrans : 1
         });
         tween(partButton.instance.Icon, animationInfo, {
-          ImageColor3: isSelected ? new Color3(0.175, 0.175, 0.175) : new Color3(1, 1, 1)
+          ImageColor3: isSelected ? new Color3(0.225, 0.225, 0.225) : new Color3(1, 1, 1)
         });
       }
     });

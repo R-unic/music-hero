@@ -1,9 +1,13 @@
-import { Controller } from "@flamework/core";
+import { Controller, type OnStart } from "@flamework/core";
 import { Player } from "shared/utilities/helpers";
 
 @Controller()
-export class MenuController {
+export class MenuController implements OnStart {
   private readonly menuUI = <ScreenGui>Player.WaitForChild("PlayerGui").WaitForChild("Menu");
+
+  public onStart(): void {
+    this.enable();
+  }
 
   public enable(): void {
     this.menuUI.Enabled = true;

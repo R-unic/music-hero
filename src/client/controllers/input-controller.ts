@@ -54,7 +54,10 @@ export class InputController implements OnInit {
 
     const isPerfect = abs(pressedNote.Position.Z) <= PERFECT_NOTE_RADIUS;
     const lastOfOverdriveGroup = pressedNote.Parent!.Name === "OverdriveGroup" && pressedNote.Parent!.GetChildren().size() === 1;
-    this.score.addCompletedNote(lastOfOverdriveGroup, isPerfect, abs(1 / pressedNote.Position.Z));
+    if (lastOfOverdriveGroup)
+      this.score.addOverdriveProgress(25);
+
+    this.score.addCompletedNote(isPerfect, abs(1 / pressedNote.Position.Z));
     this.rhythmHUD.addNoteCompletionVFX(notePosition);
     pressedNote.Destroy();
   }

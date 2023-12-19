@@ -53,6 +53,7 @@ export class RhythmBoard extends BaseComponent<{}, Part & { Grid: Texture }> {
           }
 
           this.score.resetMultiplier();
+          this.score.updateStarsProgress();
           note.Destroy();
         }
       });

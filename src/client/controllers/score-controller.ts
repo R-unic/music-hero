@@ -9,10 +9,16 @@ const { incrementData, setData } = Events;
 const { getData } = Functions;
 const { round, floor, clamp } = math;
 
+const FIVE_STAR_THRESHOLD = 95;
+const FOUR_STAR_THRESHOLD = 90;
+const THREE_STAR_THRESHOLD = 80;
+const TWO_STAR_THRESHOLD = 70;
+const ONE_STAR_THRESHOLD = 40;
 const MAX_MULTIPLIER = 16;
 
 @Controller()
 export class ScoreController implements OnStart {
+  public readonly starsProgressChanged = new Signal<(newProgress: number) => void>;
   public readonly overdriveProgressChanged = new Signal<(newProgress: number) => void>;
   public readonly nextMultiplierProgressChanged = new Signal<(newProgress: number) => void>;
   public readonly multiplierChanged = new Signal<(newMultiplier: number) => void>;
@@ -32,6 +38,7 @@ export class ScoreController implements OnStart {
     this.multiplierChanged.Fire(this.multiplier);
     this.overdriveProgressChanged.Fire(this.overdriveProgress);
     this.nextMultiplierProgressChanged.Fire(this.nextMultiplierProgress);
+    this.starsProgressChanged.Fire(this.calculateStarsProgress());
   }
 
   public setSong(songName: SongName): void {
@@ -48,16 +55,20 @@ export class ScoreController implements OnStart {
     this.changed.Fire(this.current);
   }
 
-  public addCompletedNote(lastOfOverdriveGroup: boolean, perfect: boolean, accuracy: number): void {
+  public addCompletedNote(perfect: boolean, accuracy: number): void {
     if (!this.currentSong) return;
-    if (lastOfOverdriveGroup)
-      this.addOverdriveProgress(25);
 
-    this.addMultiplierProgress(round(30 / (this.multiplier / 2.5)))
-    const baseScore = 10 + (perfect ? 5 : 0);
-    this.add(floor(baseScore * accuracy));
+    this.updateStarsProgress();
+    this.addMultiplierProgress(round(30 / (this.multiplier / 2.75)));
+    this.add(floor((10 + (perfect ? 5 : 0)) * math.clamp(accuracy, 0.15, 0.7)));
     this[perfect ? "perfectNotes" : "completedNotes"]++;
-    Log.info("Completed note" + (perfect ? " (perfect)" : "") + "!")
+    Log.info("Completed note" + (perfect ? " (perfect)" : "") + "!");
+  }
+
+  public updateStarsProgress(): void {
+    const starsProgress = round(this.calculateStarsProgress());
+    print(starsProgress)
+    this.starsProgressChanged.Fire(starsProgress);
   }
 
   public async saveResult(): Promise<void> {
@@ -96,6 +107,11 @@ export class ScoreController implements OnStart {
     });
   }
 
+  public addOverdriveProgress(progress: number): void {
+    if (!this.currentSong) return;
+    this.setOverdriveProgress(this.overdriveProgress + progress);
+  }
+
   public resetMultiplier(): void {
     this.multiplier = 1;
     this.multiplierChanged.Fire(this.multiplier);
@@ -128,11 +144,6 @@ export class ScoreController implements OnStart {
     this.nextMultiplierProgressChanged.Fire(this.nextMultiplierProgress);
   }
 
-  private addOverdriveProgress(progress: number): void {
-    if (!this.currentSong) return;
-    this.setOverdriveProgress(this.overdriveProgress + progress);
-  }
-
   private setOverdriveProgress(progress: number): void {
     if (!this.currentSong) return;
     this.overdriveProgress = clamp(progress, 0, 100);
@@ -150,18 +161,39 @@ export class ScoreController implements OnStart {
     this.currentSong = undefined;
   }
 
+  private calculateStarsProgress(): number {
+    const currentStars = this.calculateStars();
+    if (currentStars === 5)
+      return 500;
+
+    // this makes me want to jump off a bridge
+    const accuracy = this.getSongAccuracy();
+    switch(currentStars) {
+      case 0: return accuracy / ONE_STAR_THRESHOLD * 100;
+      case 1: return (currentStars * 100) + ((accuracy - ONE_STAR_THRESHOLD) / (TWO_STAR_THRESHOLD - ONE_STAR_THRESHOLD) * 100);
+      case 2: return (currentStars * 100) + ((accuracy - TWO_STAR_THRESHOLD) / (THREE_STAR_THRESHOLD - TWO_STAR_THRESHOLD) * 100);
+      case 3: return (currentStars * 100) + ((accuracy - THREE_STAR_THRESHOLD) / (FOUR_STAR_THRESHOLD - THREE_STAR_THRESHOLD) * 100);
+      case 4: return (currentStars * 100) + ((accuracy - FOUR_STAR_THRESHOLD) / (FIVE_STAR_THRESHOLD - FOUR_STAR_THRESHOLD) * 100);
+    }
+  }
+
   private calculateStars(): 0 | 1 | 2 | 3 | 4 | 5 {
-    if (this.current >= 95)
+    const accuracy = this.getSongAccuracy();
+    if (accuracy >= FIVE_STAR_THRESHOLD)
       return 5;
-    else if (this.current >= 90)
+    else if (accuracy >= FOUR_STAR_THRESHOLD)
       return 4;
-    else if (this.current >= 80)
+    else if (accuracy >= THREE_STAR_THRESHOLD)
       return 3;
-    else if (this.current >= 70)
+    else if (accuracy >= TWO_STAR_THRESHOLD)
       return 2;
-    else if (this.current >= 40)
+    else if (accuracy >= ONE_STAR_THRESHOLD)
       return 1;
     else
       return 0;
+  }
+
+  private getSongAccuracy(): number {
+    return (this.completedNotes + this.perfectNotes) / this.totalNotes * 100;
   }
 }
