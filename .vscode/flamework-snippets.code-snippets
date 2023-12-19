@@ -56,13 +56,11 @@
 			"",
 			"import { Player } from \"shared/utilities/helpers\";",
 			"",
-			"interface Attributes {}",
-			"",
 			"@Component({",
 			"\ttag: \"${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g}\",",
 			"\tancestorWhitelist: [ Player.WaitForChild(\"PlayerGui\") ]"
 			"})"
-			"export class ${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g} extends BaseComponent<Attributes, GuiObject> implements OnStart {",
+			"export class ${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g} extends BaseComponent<{}, GuiObject> implements OnStart {",
 				"\tpublic onStart(): void {",
 					"\t\t$0",
 				"\t}",

@@ -4,6 +4,7 @@ import Signal from "@rbxts/signal";
 import { Events, Functions } from "client/network";
 import type SongScoreTable from "shared/data-models/song-score-table";
 import Log from "shared/logger";
+import { DebugController } from "./debug-controller";
 
 const { incrementData, setData } = Events;
 const { getData } = Functions;
@@ -23,6 +24,10 @@ export class ScoreController implements OnStart {
   public readonly nextMultiplierProgressChanged = new Signal<(newProgress: number) => void>;
   public readonly multiplierChanged = new Signal<(newMultiplier: number) => void>;
   public readonly changed = new Signal<(newScore: number) => void>;
+  public goodNotes = 0;
+  public perfectNotes = 0;
+  public totalNotes = 0;
+  public failedNotes = 0;
 
   private currentSong?: SongName;
   private inOverdrive = false;
@@ -30,11 +35,13 @@ export class ScoreController implements OnStart {
   private current = 0;
   private multiplier = 1;
   private nextMultiplierProgress = 0;
-  private completedNotes = 0;
-  private perfectNotes = 0;
-  private totalNotes = 0;
+
+  public constructor(
+    private readonly debug: DebugController
+  ) {}
 
   public onStart(): void {
+    this.updateDebugScreen();
     this.multiplierChanged.Fire(this.multiplier);
     this.overdriveProgressChanged.Fire(this.overdriveProgress);
     this.nextMultiplierProgressChanged.Fire(this.nextMultiplierProgress);
@@ -61,24 +68,31 @@ export class ScoreController implements OnStart {
     this.updateStarsProgress();
     this.addMultiplierProgress(round(30 / (this.multiplier / 2.75)));
     this.add(floor((10 + (perfect ? 5 : 0)) * math.clamp(accuracy, 0.15, 0.7)));
-    this[perfect ? "perfectNotes" : "completedNotes"]++;
-    Log.info("Completed note" + (perfect ? " (perfect)" : "") + "!");
+    this[perfect ? "perfectNotes" : "goodNotes"]++;
+
+    this.updateDebugScreen();
+  }
+
+  public addFailedNote(): void {
+    this.failedNotes++;
+    this.resetMultiplier();
+    this.updateStarsProgress();
+    this.updateDebugScreen();
   }
 
   public updateStarsProgress(): void {
     const starsProgress = round(this.calculateStarsProgress());
-    print(starsProgress)
     this.starsProgressChanged.Fire(starsProgress);
   }
 
   public async saveResult(): Promise<void> {
     if (!this.currentSong) return;
     const scorecard: SongScoreTable = {
-      goodNotes: this.completedNotes,
+      goodNotes: this.goodNotes,
       perfectNotes: this.perfectNotes,
-      missedNotes: this.totalNotes - this.perfectNotes - this.completedNotes,
+      missedNotes: this.failedNotes,
       points: this.current,
-      stars: this.calculateStars()
+      starsProgress: this.calculateStarsProgress()
     };
 
     const songScores = <Record<SongName, SongScoreTable[]>>await getData("songScores");
@@ -87,7 +101,7 @@ export class ScoreController implements OnStart {
 
     songScores[this.currentSong].push(scorecard);
     await setData("songScores", songScores);
-    incrementData("stars", scorecard.stars);
+    incrementData("stars", this.calculateStars());
 
     this.reset();
   }
@@ -118,6 +132,17 @@ export class ScoreController implements OnStart {
     this.nextMultiplierProgress = 0;
   }
 
+  public getSongAccuracy(): number {
+    if (this.goodNotes === 0 && this.perfectNotes === 0)
+      return 0;
+
+    return (this.goodNotes + this.perfectNotes) / this.totalNotes * 100;
+  }
+
+  private updateDebugScreen(): void {
+    this.debug.getUI().updateRhythmStats(this);
+  }
+
   private nextMultiplier(): void {
     if (this.multiplier === MAX_MULTIPLIER) return;
     this.multiplier = math.min(this.multiplier * 2, MAX_MULTIPLIER);
@@ -133,15 +158,17 @@ export class ScoreController implements OnStart {
   }
 
   private setMultiplierProgress(progress: number): void {
-    if (!this.currentSong) return;
-    if (progress >= 100) {
-      const residual = progress - 100;
-      this.nextMultiplier();
-      this.addMultiplierProgress(residual)
-    } else
-      this.nextMultiplierProgress = clamp(progress, 0, 100);
+    task.spawn(() => {
+      if (!this.currentSong) return;
+      if (progress >= 100) {
+        const residual = progress - 100;
+        this.nextMultiplier();
+        this.addMultiplierProgress(residual)
+      } else
+        this.nextMultiplierProgress = clamp(progress, 0, 100);
 
-    this.nextMultiplierProgressChanged.Fire(this.nextMultiplierProgress);
+      this.nextMultiplierProgressChanged.Fire(this.nextMultiplierProgress);
+    });
   }
 
   private setOverdriveProgress(progress: number): void {
@@ -155,7 +182,7 @@ export class ScoreController implements OnStart {
     this.current = 0;
     this.changed.Fire(this.current);
     this.setOverdriveProgress(0);
-    this.completedNotes = 0;
+    this.goodNotes = 0;
     this.perfectNotes = 0;
     this.totalNotes = 0;
     this.currentSong = undefined;
@@ -191,9 +218,5 @@ export class ScoreController implements OnStart {
       return 1;
     else
       return 0;
-  }
-
-  private getSongAccuracy(): number {
-    return (this.completedNotes + this.perfectNotes) / this.totalNotes * 100;
   }
 }

@@ -33,17 +33,19 @@ export class StarsFrame extends BaseComponent<{}, Frame> implements OnStart {
   }
 
   private setStarsProgress(progress: number): void {
-    progress = math.clamp(progress, 0, 500);
-    const filledStars = floor(progress / 100);
-    const currentStarProgress = progress - (filledStars * 100);
-    for (let i = 1; i <= filledStars; i++) {
-      const star = this.stars.find(star => star.LayoutOrder === i)!;
-      star.Progress.UIGradient.Transparency = new NumberSequence(0);
-    }
+    task.spawn(() => {
+      progress = math.clamp(progress, 0, 500);
+      const filledStars = floor(progress / 100);
+      const currentStarProgress = progress - (filledStars * 100);
+      for (let i = 1; i <= filledStars; i++) {
+        const star = this.stars.find(star => star.LayoutOrder === i)!;
+        star.Progress.UIGradient.Transparency = new NumberSequence(0);
+      }
 
-    const currentStar = this.stars.find(star => star.LayoutOrder === filledStars + 1);
-    if (!currentStar) return;
-    currentStar.Progress.UIGradient.Transparency = this.getNumberSequenceFromProgress(currentStarProgress);
+      const currentStar = this.stars.find(star => star.LayoutOrder === filledStars + 1);
+      if (!currentStar) return;
+      currentStar.Progress.UIGradient.Transparency = this.getNumberSequenceFromProgress(currentStarProgress);
+    });
   }
 
   private getNumberSequenceFromProgress(progress: number): NumberSequence {

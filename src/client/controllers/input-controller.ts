@@ -51,6 +51,7 @@ export class InputController implements OnInit {
 
     const [pressedNote] = this.getNotesInRadius(notePosition);
     if (!pressedNote) return;
+    pressedNote.SetAttribute("Completed", true);
 
     const isPerfect = abs(pressedNote.Position.Z) <= PERFECT_NOTE_RADIUS;
     const lastOfOverdriveGroup = pressedNote.Parent!.Name === "OverdriveGroup" && pressedNote.Parent!.GetChildren().size() === 1;
@@ -77,6 +78,7 @@ export class InputController implements OnInit {
   private getAllNotes(): MeshPart[] {
     return this.song.getCurrentNoteTrack()!
       .GetDescendants()
-      .filter((instance): instance is MeshPart => instance.IsA("MeshPart"));
+      .filter((instance): instance is MeshPart => instance.IsA("MeshPart"))
+      .filter(note => !note.GetAttribute("Completed"));
   }
 }

@@ -13,7 +13,7 @@ export class RhythmHUDController {
   public highlightFinishPosition(position: NotePosition): void {
     const finishPosition = this.getFinishPosition(position);
     const tweenInfo = new TweenInfoBuilder()
-      .SetTime(0.04)
+      .SetTime(0.075)
       .SetEasingStyle(Enum.EasingStyle.Sine)
       .SetEasingDirection(Enum.EasingDirection.In)
       .SetReverses(true);

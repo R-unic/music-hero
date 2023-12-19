@@ -2,12 +2,11 @@ import { Component, BaseComponent } from "@flamework/components";
 
 import { Player } from "shared/utilities/helpers";
 import { NORMAL_NOTE_COLOR, OVERDRIVE_NOTE_COLOR, VALID_NOTE_RADIUS } from "shared/constants";
-import Log from "shared/logger";
 
 import type { ScoreController } from "client/controllers/score-controller";
 
 const BEAT_STUD_LENGTH = 12;
-const NOTE_COMPLETION_POSITION = 0 + VALID_NOTE_RADIUS;
+const NOTE_COMPLETION_POSITION = 0 + (VALID_NOTE_RADIUS / 1.5);
 
 @Component({
   tag: "RhythmBoard",
@@ -42,7 +41,6 @@ export class RhythmBoard extends BaseComponent<{}, Part & { Grid: Texture }> {
     for (const note of allNotes)
       task.spawn(() => {
         if (note.Position.Z >= NOTE_COMPLETION_POSITION) {
-          Log.info("Failed note!");
           if (note.Color === OVERDRIVE_NOTE_COLOR) {
             const overdriveGroup = note.Parent!;
             for (const otherNote of <Part[]>overdriveGroup.GetChildren()) {
@@ -52,8 +50,7 @@ export class RhythmBoard extends BaseComponent<{}, Part & { Grid: Texture }> {
             overdriveGroup.Destroy();
           }
 
-          this.score.resetMultiplier();
-          this.score.updateStarsProgress();
+          this.score.addFailedNote();
           note.Destroy();
         }
       });
